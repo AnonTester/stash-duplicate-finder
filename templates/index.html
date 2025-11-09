@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-film"></i> Scene Overview
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ scene_count }}</h3>
+                                <p class="mb-0">Total Scenes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ scenes|length }}</h3>
+                                <p class="mb-0">Scenes Loaded</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-copy"></i> Find Duplicates
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Select a method to find duplicate scenes:</p>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card scene-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-fingerprint fa-3x text-primary mb-3"></i>
+                                <h5>By Stash ID</h5>
+                                <p class="text-muted">Find scenes with identical Stash IDs</p>
+                                <a href="/duplicates/stashid" class="btn btn-primary">Find Duplicates</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card scene-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-font fa-3x text-success mb-3"></i>
+                                <h5>By Name (Fuzzy)</h5>
+                                <p class="text-muted">Find scenes with similar titles</p>
+                                <a href="/duplicates/name" class="btn btn-success">Find Duplicates</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card scene-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-hashtag fa-3x text-warning mb-3"></i>
+                                <h5>By OSHASH</h5>
+                                <p class="text-muted">Find scenes with identical OSHASH fingerprints</p>
+                                <a href="/duplicates/oshash" class="btn btn-warning">Find Duplicates</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card scene-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-image fa-3x text-danger mb-3"></i>
+                                <h5>By PHASH</h5>
+                                <p class="text-muted">Find scenes with identical PHASH fingerprints</p>
+                                <a href="/duplicates/phash" class="btn btn-danger">Find Duplicates</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

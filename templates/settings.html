@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Stash Duplicate Finder{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-cog"></i> Stash Configuration
+                </h4>
+            </div>
+            <div class="card-body">
+                <form action="/settings" method="post">
+                    <div class="mb-3">
+                        <label for="stash_endpoint" class="form-label">Stash GraphQL Endpoint</label>
+                        <input type="url" class="form-control" id="stash_endpoint" name="stash_endpoint" 
+                               value="{{ config.stash_endpoint }}" required>
+                        <div class="form-text">Usually http://localhost:9999/graphql</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="api_key" class="form-label">API Key (Optional)</label>
+                        <input type="text" class="form-control" id="api_key" name="api_key" 
+                               value="{{ config.api_key or '' }}">
+                        <div class="form-text">Leave empty if no API key is required</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Configuration
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

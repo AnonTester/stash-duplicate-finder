@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Duplicates by {{ method_name }} - Stash Duplicate Finder{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-copy"></i> Duplicates by {{ method_name }}
+            </h2>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Overview
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ total_duplicate_groups }}</h3>
+                                <p class="mb-0">Duplicate Groups</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h3>{{ total_duplicate_scenes }}</h3>
+                                <p class="mb-0">Total Duplicate Scenes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if duplicate_groups %}
+        <div class="mt-4">
+            {% for key, scenes in duplicate_groups.items() %}
+            <div class="card duplicate-group mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> 
+                        {% if duplicate_type == "name" %}
+                            "{{ key }}"
+                        {% else %}
+                            {{ key }}
+                        {% endif %}
+                        <span class="badge bg-danger ms-2">{{ scenes|length }} duplicates</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for scene in scenes %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card scene-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <a href="{{ config.stash_endpoint.replace('/graphql', '') }}/scenes/{{ scene.id }}" 
+                                           target="_blank" class="text-decoration-none">
+                                            {{ scene.title or "Untitled" }}
+                                        </a>
+                                    </h6>
+                                    <div class="text-muted small">
+                                        <div><strong>ID:</strong> {{ scene.id }}</div>
+                                        {% if scene.stash_ids %}
+                                        <div><strong>Stash IDs:</strong> 
+                                            {% for stash_id in scene.stash_ids %}
+                                            {{ stash_id.stash_id }}{% if not loop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        {% if scene.files %}
+                                        <div class="mt-2">
+                                            <strong>Files:</strong>
+                                            {% for file in scene.files %}
+                                            <div class="ms-2">
+                                                <small>{{ file.basename }}</small><br>
+                                                <small class="text-info">
+                                                    {{ file.video_codec }} • {{ file.height }}p • 
+                                                    {{ (file.duration / 60)|round(1) }}min
+                                                </small>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle"></i> No duplicates found using {{ method_name }} method.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
