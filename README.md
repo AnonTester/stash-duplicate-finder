@@ -11,6 +11,11 @@ While the internal duplicate finder works on perception hashes and length, this 
 Stash Duplicate Finder runs a small web server (default port **8000**) that provides a dashboard with the options.
 It should work fine on all operating systems, but has only been tested on linux.
 
+![Screenshot 1](screenshot1.png)
+
+![Screenshot 1](screenshot2.png)
+
+
 ---
 
 ## ⚙️ Installation
