@@ -1,0 +1,14 @@
+name: stash-duplicate-finder
+services:
+  stash-duplicate-finder:
+    image: stash-duplicate-finder:latest
+    build: 
+      context: . 
+      no_cache: true
+    container_name: stash-duplicate-finder
+    volumes:
+      - /opt/stash-duplicate-finder/config.json:/app/config.json
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+
