@@ -9,6 +9,6 @@ services:
     volumes:
       - /opt/stash-duplicate-finder/config.json:/app/config.json
     ports:
-      - 8000:8000
+      - 9979:8000
     restart: unless-stopped
 

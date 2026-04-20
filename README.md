@@ -73,7 +73,7 @@ deactivate
 
 ## 🧰 Configuration
 
-On first start, the application will prompt for your stash instance url and api key and save those in a config.json file in the current directory.
+On first start, the application will prompt for the your stash instance url and api key and save those in a config.json file in the current directory.
 
 
 ```json
@@ -81,18 +81,6 @@ On first start, the application will prompt for your stash instance url and api 
     "stash_endpoint": "http://localhost:9999/graphql",
     "api_key": "your-api-key"
 }
-```
-
-## 🐳 Docker
-
-Dockerfile and docker compose files are available with small alpine base (108MB).
-
-Adjust the docker-compose.yml to your preferences. Create an empty config file for persistence, then run:
-
-```
-mkdir -p /opt/stash-duplicate-finder
-touch /opt/stash-duplicate-finder/config.json
-docker compose up -d
 ```
 
 

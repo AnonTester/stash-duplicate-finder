@@ -23,7 +23,7 @@
                     <div class="col-md-6">
                         <div class="card bg-danger text-white">
                             <div class="card-body text-center">
-                                <h3>{{ total_duplicate_groups }}</h3>
+                                <h3 id="summary-duplicate-groups">{{ total_duplicate_groups }}</h3>
                                 <p class="mb-0">Duplicate Groups</p>
                             </div>
                         </div>
@@ -31,7 +31,7 @@
                     <div class="col-md-6">
                         <div class="card bg-warning text-white">
                             <div class="card-body text-center">
-                                <h3>{{ total_duplicate_scenes }}</h3>
+                                <h3 id="summary-duplicate-scenes">{{ total_duplicate_scenes }}</h3>
                                 <p class="mb-0">Total Duplicate Scenes</p>
                             </div>
                         </div>
@@ -42,55 +42,102 @@
 
         {% if duplicate_groups %}
         <div class="mt-4">
-            {% for key, scenes in duplicate_groups.items() %}
-            <div class="card duplicate-group mb-4">
+            {% for key, entries in duplicate_groups.items() %}
+            <div class="card duplicate-group mb-4" data-group-key="{{ key }}">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
                         <i class="fas fa-users"></i> 
                         {% if duplicate_type == "name" %}
                             "{{ key }}"
                         {% else %}
-                            {{ key }}
+                            <span class="break-char">{{ key }}</span>
                         {% endif %}
-                        <span class="badge bg-danger ms-2">{{ scenes|length }} duplicates</span>
+                        <span class="badge bg-danger ms-2 duplicate-count-badge">{{ entries|length }} duplicates</span>
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        {% for scene in scenes %}
-                        <div class="col-md-6 mb-3">
-                            <div class="card scene-card">
+                        {% for entry in entries %}
+                        <div class="col-md-6 mb-3 scene-col" data-scene-id="{{ entry.scene.id }}">
+                            <div class="card scene-card h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">
-                                        <a href="{{ config.stash_endpoint.replace('/graphql', '') }}/scenes/{{ scene.id }}" 
-                                           target="_blank" class="text-decoration-none">
-                                            {{ scene.title or "Untitled" }}
-                                        </a>
-                                    </h6>
-                                    <div class="text-muted small">
-                                        <div><strong>ID:</strong> {{ scene.id }}</div>
-                                        {% if scene.stash_ids %}
-                                        <div><strong>Stash IDs:</strong> 
-                                            {% for stash_id in scene.stash_ids %}
-                                            {{ stash_id.stash_id }}{% if not loop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                        {% endif %}
-                                        {% if scene.files %}
-                                        <div class="mt-2">
-                                            <strong>Files:</strong>
-                                            {% for file in scene.files %}
-                                            <div class="ms-2">
-                                                <small>{{ file.basename }}</small><br>
-                                                <small class="text-info">
-                                                    {{ file.video_codec }} • {{ file.height }}p • 
-                                                    {{ (file.duration / 60)|round(1) }}min
-                                                </small>
+                                    <div class="d-flex gap-3 align-items-start">
+                                        <div class="scene-cover-wrapper">
+                                            {% set scene_cover = entry.scene.paths.screenshot if entry.scene.paths and entry.scene.paths.screenshot else (entry.scene.paths.preview if entry.scene.paths and entry.scene.paths.preview else None) %}
+                                            {% if scene_cover %}
+                                            <img src="{{ scene_cover }}" alt="Scene cover" class="scene-cover">
+                                            {% else %}
+                                            <div class="scene-cover scene-cover-placeholder">
+                                                <i class="fas fa-image"></i>
                                             </div>
-                                            {% endfor %}
+                                            {% endif %}
                                         </div>
-                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title">
+                                                <a href="{{ config.stash_endpoint.replace('/graphql', '') }}/scenes/{{ entry.scene.id }}"
+                                                   target="_blank" class="text-decoration-none break-char d-block">
+                                                    {{ entry.scene.title or "Untitled" }}
+                                                </a>
+                                            </h6>
+                                            <div class="text-muted small">
+                                                <div><strong>ID:</strong> {{ entry.scene.id }}</div>
+                                                {% if duplicate_type != "stashid" and entry.scene.stash_ids %}
+                                                <div><strong>Stash IDs:</strong>
+                                                    {% for stash_id in entry.scene.stash_ids %}
+                                                    <a href="https://stashdb.org/scenes/{{ stash_id.stash_id }}"
+                                                       target="_blank"
+                                                       rel="noopener noreferrer"
+                                                       class="d-inline-block">
+                                                        StashDB
+                                                    </a>{% if not loop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
+                                    {% if entry.file %}
+                                    <div class="mt-2">
+                                        <strong>File:</strong>
+                                        <div class="ms-2 mt-1 file-entry" data-file-id="{{ entry.file.id }}" data-duplicate-key="{{ entry.duplicate_key }}">
+                                            <small class="d-block break-char">{{ entry.file.basename }}</small>
+                                            <small class="text-info d-block">
+                                                {{ entry.file.format or entry.file.video_codec or "Unknown format" }} •
+                                                {% if entry.file.width and entry.file.height %}
+                                                {{ entry.file.width }}x{{ entry.file.height }}
+                                                {% elif entry.file.height %}
+                                                {{ entry.file.height }}p
+                                                {% else %}
+                                                Unknown resolution
+                                                {% endif %} •
+                                                {% if entry.file.duration %}
+                                                {{ (entry.file.duration / 60)|round(1) }}min
+                                                {% else %}
+                                                Unknown duration
+                                                {% endif %} •
+                                                {% if entry.file.size %}
+                                                {{ (entry.file.size / 1048576)|round(2) }}MB
+                                                {% else %}
+                                                Unknown size
+                                                {% endif %}
+                                            </small>
+                                            <form action="/delete-file" method="post" class="mt-1 delete-file-form">
+                                                <input type="hidden" name="file_id" value="{{ entry.file.id }}">
+                                                <input type="hidden" name="scene_id" value="{{ entry.scene.id }}">
+                                                <input type="hidden" name="scene_file_count" value="{{ entry.scene_file_count }}">
+                                                <input type="hidden" name="duplicate_type" value="{{ duplicate_type }}">
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-outline-danger py-0 px-2 delete-file-btn"
+                                                    onclick="return confirm('{% if entry.scene_file_count == 1 %}This scene has only one file. Deleting this file will also delete the scene. Continue?{% else %}Delete this file from Stash?{% endif %}')"
+                                                >
+                                                    <i class="fas fa-trash-alt"></i>
+                                                    {% if entry.scene_file_count == 1 %}Delete File & Scene{% else %}Delete File{% endif %}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -107,4 +154,114 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("submit", async (event) => {
+    const form = event.target;
+    if (!form.classList.contains("delete-file-form")) {
+        return;
+    }
+
+    event.preventDefault();
+
+    const button = form.querySelector(".delete-file-btn");
+    const originalHtml = button ? button.innerHTML : "";
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+            throw new Error(payload.error || "Delete failed");
+        }
+
+        const duplicateType = "{{ duplicate_type }}";
+
+        // Remove the deleted file from every rendered instance of the same scene card.
+        document.querySelectorAll(".file-entry").forEach((entry) => {
+            if (entry.dataset.fileId === payload.file_id) {
+                entry.remove();
+            }
+        });
+
+        if (payload.scene_deleted) {
+            document.querySelectorAll(".scene-col").forEach((sceneCol) => {
+                if (sceneCol.dataset.sceneId === payload.scene_id) {
+                    sceneCol.remove();
+                }
+            });
+        } else {
+            document.querySelectorAll(".scene-col").forEach((sceneCol) => {
+                const sceneCard = sceneCol.querySelector(".scene-card");
+                if (sceneCard && sceneCard.querySelectorAll(".file-entry").length === 0) {
+                    sceneCol.remove();
+                }
+            });
+        }
+
+        // For hash views, a scene only belongs in a group if it still has a file with that hash key.
+        if (duplicateType === "oshash" || duplicateType === "phash") {
+            document.querySelectorAll(".duplicate-group").forEach((groupCard) => {
+                const groupKey = groupCard.dataset.groupKey || "";
+                groupCard.querySelectorAll(".scene-col").forEach((sceneCol) => {
+                    const hasMatchingFile = Array.from(sceneCol.querySelectorAll(".file-entry"))
+                        .some((entry) => (entry.dataset.duplicateKey || "") === groupKey);
+                    if (!hasMatchingFile) {
+                        sceneCol.remove();
+                    }
+                });
+            });
+        }
+
+        document.querySelectorAll(".duplicate-group").forEach((groupCard) => {
+            const remainingScenes = groupCard.querySelectorAll(".scene-col").length;
+            const badge = groupCard.querySelector(".duplicate-count-badge");
+            if (badge) {
+                badge.textContent = `${remainingScenes} duplicates`;
+            }
+            if (remainingScenes < 2) {
+                groupCard.remove();
+            }
+        });
+
+        if (document.querySelectorAll(".duplicate-group").length === 0) {
+            const container = document.querySelector(".container .row .col-12");
+            if (container && !container.querySelector(".alert.alert-info")) {
+                container.insertAdjacentHTML("beforeend", `
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle"></i> No duplicates found using {{ method_name }} method.
+                    </div>
+                `);
+            }
+        }
+
+        const groupsCountElement = document.getElementById("summary-duplicate-groups");
+        const scenesCountElement = document.getElementById("summary-duplicate-scenes");
+        if (groupsCountElement) {
+            groupsCountElement.textContent = document.querySelectorAll(".duplicate-group").length;
+        }
+        if (scenesCountElement) {
+            scenesCountElement.textContent = document.querySelectorAll(".scene-col").length;
+        }
+    } catch (error) {
+        alert(`Failed to delete file: ${error.message}`);
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalHtml;
+        }
+    }
+});
+</script>
 {% endblock %}
